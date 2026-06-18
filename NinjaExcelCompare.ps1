@@ -24,7 +24,7 @@ $Body = @{
     grant_type    = "client_credentials"
     client_id     = $Env["CLIENT_ID"]
     client_secret = $Env["CLIENT_SECRET"]
-    scope         = "monitoring"
+    scope         = "monitoring management control"
 }
 
 $TokenResponse = Invoke-RestMethod -Method POST -Uri ("$($Env["RMM_URL"])/ws/oauth/token") -ContentType "application/x-www-form-urlencoded" -Body $Body
@@ -36,7 +36,7 @@ $Headers = @{
     Accept        = "application/json"
 }
 
-$Devices = Invoke-RestMethod -Method GET -Uri "$($Env["RMM_URL"])/v2/devices" -Headers $Headers
+$Devices = Invoke-RestMethod -Method GET -Uri "$($Env["RMM_URL"])/v2/devices-detailed" -Headers $Headers
 
 $DevicesJSON = $Devices | ConvertTo-Json
 
@@ -45,11 +45,15 @@ $DevicesArray = ConvertFrom-Json $DevicesJSON
 $NinjaComputerList = @()
 
 For ($Index = 0; $Index -lt $DevicesArray.Count; $Index++) {
-    $DeviceName = ($DevicesArray[$Index].dnsName -replace $($Env["DNS_NAME"]), "")
+    If ($DevicesArray[$Index].displayName -ne $null) {
+        $DeviceName = $DevicesArray[$Index].displayName
+    } Else {
+        $DeviceName = $DevicesArray[$Index].systemName
+    }
 
     # Check for no name to not add devices that were recently deleted
     If ($DeviceName -ne "") {
-        $NinjaComputerList += ($DevicesArray[$Index].dnsName -replace $($Env["DNS_NAME"]), "")
+        $NinjaComputerList += $DeviceName
     }
 }
 
@@ -68,22 +72,32 @@ $TrackedSheets = @($Env["TRACKED_SHEETS"].Split(','))
 ForEach ($Sheet in $SheetNames) {
     If ($TrackedSheets -contains $Sheet) {
         $Names = Import-Excel -Path $ReportPath -WorksheetName $Sheet | Select-Object -ExpandProperty Name
-        $ExcelSheetsComputerList += $Names 
+        $ExcelSheetsComputerList += $Names
     }   
 }
 
 ForEach ($ExcelComputer in $ExcelSheetsComputerList) {
-    If ($NinjaComputerList -contains $ExcelComputer) {
-
-    } Else {
-        Write-Host $ExcelComputer "is present in Excel but not in Ninja!" -BackgroundColor DarkGray
+    If (-not ($NinjaComputerList -contains $ExcelComputer)) {
+        Write-Host $ExcelComputer "is present in Excel but not in Ninja!" -BackgroundColor Green
     }
 }
 
 ForEach ($NinjaComputer in $NinjaComputerList) {
-    If ($ExcelSheetsComputerList -contains $NinjaComputer) {
-
-    } Else {
-        Write-Host $NinjaComputer "is present in Ninja but not in Excel!" -BackgroundColor Blue
+    If (-not ($ExcelSheetsComputerList -contains $NinjaComputer)) {
+        Write-Host $NinjaComputer "is present in Ninja but not in Excel!" -BackgroundColor Cyan
     }
 }
+
+#$Potential = @()
+#For ($Index = 0; $Index -lt $DevicesArray.Count; $Index++) {
+#    $DisplayName = $DevicesArray[$Index].displayName
+#    $SystemName = $DevicesArray[$Index].systemName
+#
+#    If ($DisplayName -ne $null) {
+#        If ($DisplayName -ne $SystemName) {
+#            $Potential += "Display Name $($DisplayName) is not that same as System Name $($SystemName)"
+#        }
+#    }
+#}
+#
+#$Potential | Out-File -FilePath "./WrongDevices2.txt" -Encoding UTF8
