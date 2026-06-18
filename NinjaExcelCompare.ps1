@@ -54,7 +54,6 @@ For ($Index = 0; $Index -lt $DevicesArray.Count; $Index++) {
 }
 
 $ReportPath = $Env["REPORT_URL"]
-$ExcelObj = Import-Excel -Path $ReportPath
 $ExcelPackage = Open-ExcelPackage -Path $ReportPath
 $SheetNames = $ExcelPackage.Workbook.Worksheets.Name
 $ExcelSheetsComputerList = @()
