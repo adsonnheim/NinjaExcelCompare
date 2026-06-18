@@ -6,7 +6,6 @@ If (-not (Test-Path $EnvFilePath -PathType Leaf)) {
 }
 
 $Env = @{}
-
 $EnvLines = Get-Content $EnvFilePath
 
 ForEach ($Line in $EnvLines) {
@@ -28,7 +27,6 @@ $Body = @{
 }
 
 $TokenResponse = Invoke-RestMethod -Method POST -Uri ("$($Env["RMM_URL"])/ws/oauth/token") -ContentType "application/x-www-form-urlencoded" -Body $Body
-
 $Token = $TokenResponse.access_token
 
 $Headers = @{
@@ -37,9 +35,7 @@ $Headers = @{
 }
 
 $Devices = Invoke-RestMethod -Method GET -Uri "$($Env["RMM_URL"])/v2/devices-detailed" -Headers $Headers
-
 $DevicesJSON = $Devices | ConvertTo-Json
-
 $DevicesArray = ConvertFrom-Json $DevicesJSON
 
 $NinjaComputerList = @()
@@ -58,15 +54,10 @@ For ($Index = 0; $Index -lt $DevicesArray.Count; $Index++) {
 }
 
 $ReportPath = $Env["REPORT_URL"]
-
 $ExcelObj = Import-Excel -Path $ReportPath
-
 $ExcelPackage = Open-ExcelPackage -Path $ReportPath
-
 $SheetNames = $ExcelPackage.Workbook.Worksheets.Name
-
 $ExcelSheetsComputerList = @()
-
 $TrackedSheets = @($Env["TRACKED_SHEETS"].Split(','))
 
 ForEach ($Sheet in $SheetNames) {
@@ -87,17 +78,3 @@ ForEach ($NinjaComputer in $NinjaComputerList) {
         Write-Host $NinjaComputer "is present in Ninja but not in Excel!" -BackgroundColor Cyan
     }
 }
-
-#$Potential = @()
-#For ($Index = 0; $Index -lt $DevicesArray.Count; $Index++) {
-#    $DisplayName = $DevicesArray[$Index].displayName
-#    $SystemName = $DevicesArray[$Index].systemName
-#
-#    If ($DisplayName -ne $null) {
-#        If ($DisplayName -ne $SystemName) {
-#            $Potential += "Display Name $($DisplayName) is not that same as System Name $($SystemName)"
-#        }
-#    }
-#}
-#
-#$Potential | Out-File -FilePath "./WrongDevices2.txt" -Encoding UTF8
