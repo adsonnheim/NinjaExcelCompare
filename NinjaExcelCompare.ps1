@@ -61,29 +61,29 @@ $ExcelPackage = Open-ExcelPackage -Path $ReportPath
 
 $SheetNames = $ExcelPackage.Workbook.Worksheets.Name
 
-$CoffeeSheetsComputerList = @()
+$ExcelSheetsComputerList = @()
 
 $TrackedSheets = @($Env["TRACKED_SHEETS"].Split(','))
 
 ForEach ($Sheet in $SheetNames) {
     If ($TrackedSheets -contains $Sheet) {
         $Names = Import-Excel -Path $ReportPath -WorksheetName $Sheet | Select-Object -ExpandProperty Name
-        $CoffeeSheetsComputerList += $Names 
+        $ExcelSheetsComputerList += $Names 
     }   
 }
 
-ForEach ($CoffeeComputer in $CoffeeSheetsComputerList) {
-    If ($NinjaComputerList -contains $CoffeeComputer) {
+ForEach ($ExcelComputer in $ExcelSheetsComputerList) {
+    If ($NinjaComputerList -contains $ExcelComputer) {
 
     } Else {
-        Write-Host $CoffeeComputer "is present in Coffee Orders but not in Ninja!" -BackgroundColor DarkGray
+        Write-Host $ExcelComputer "is present in Excel but not in Ninja!" -BackgroundColor DarkGray
     }
 }
 
 ForEach ($NinjaComputer in $NinjaComputerList) {
-    If ($CoffeeSheetsComputerList -contains $NinjaComputer) {
+    If ($ExcelSheetsComputerList -contains $NinjaComputer) {
 
     } Else {
-        Write-Host $NinjaComputer "is present in Ninja but not in Coffee Orders!" -BackgroundColor Blue
+        Write-Host $NinjaComputer "is present in Ninja but not in Excel!" -BackgroundColor Blue
     }
 }
