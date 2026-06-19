@@ -41,7 +41,7 @@ $DevicesArray = ConvertFrom-Json $DevicesJSON
 $NinjaComputerList = @()
 
 For ($Index = 0; $Index -lt $DevicesArray.Count; $Index++) {
-    If ($DevicesArray[$Index].displayName -ne $null) {
+    If ($null -ne $DevicesArray[$Index].displayName) {
         $DeviceName = $DevicesArray[$Index].displayName
     } Else {
         $DeviceName = $DevicesArray[$Index].systemName
