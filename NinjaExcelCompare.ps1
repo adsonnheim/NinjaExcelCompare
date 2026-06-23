@@ -68,12 +68,12 @@ ForEach ($Sheet in $SheetNames) {
 
 ForEach ($ExcelComputer in $ExcelSheetsComputerList) {
     If (-not ($NinjaComputerList -contains $ExcelComputer)) {
-        Write-Host $ExcelComputer "is present in Excel but not in Ninja!" -BackgroundColor Green
+        Write-Host $ExcelComputer "is present in Excel but inconsistent with Ninja!" -BackgroundColor Green
     }
 }
 
 ForEach ($NinjaComputer in $NinjaComputerList) {
     If (-not ($ExcelSheetsComputerList -contains $NinjaComputer)) {
-        Write-Host $NinjaComputer "is present in Ninja but not in Excel!" -BackgroundColor Cyan
+        Write-Host $NinjaComputer "is present in Ninja but inconsistent with Excel!" -BackgroundColor Cyan
     }
 }
